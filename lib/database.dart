@@ -1,11 +1,8 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:convert';
 
 class DatabaseClient {
   Database _db;
@@ -14,24 +11,25 @@ class DatabaseClient {
     Directory path = await getApplicationDocumentsDirectory();
     String dbPath = join(path.path, "database.db");
 
-    _db = await openDatabase(dbPath, version: 1,
+    _db = await openDatabase(dbPath, version: 2,
         onCreate: this._create);
   }
 
   Future _create(Database db, int version) async {
+    await db.execute("""DROP TABLE IF EXISTS recipes""");
     await db.execute("""
             create table recipes (
             _id text primary key,
             server_id text,
-            country text not null,
+            country text,
             title text not null,
-            ingredients text not null,
-            preparation text not null,
-            image_name text not null,
-            source text not null,
+            ingredients text,
+            preparation text,
+            image_name text,
+            source text,
             original_id integer not null,
-            original_image text not null,
-            tags text not null,
+            original_image text,
+            tags text,
             updated text)""");
   }
 
@@ -40,7 +38,7 @@ class DatabaseClient {
     if (count == 0) {
       recipe.original_id = await _db.insert("recipes", recipe.toMap());
     } else {
-      await _db.update("recipes", recipe.toMap(), where: "id = ?", whereArgs: [recipe.original_id]);
+      await _db.update("recipes", recipe.toMap(), where: "original_id = ?", whereArgs: [recipe.original_id]);
     }
 
     return recipe;
@@ -57,13 +55,13 @@ class DatabaseClient {
   Future<List> fetchLatestRecipes(int limit) async {
     List results = await _db.query("recipes", columns: Recipe.columns, limit: limit, orderBy: "original_id DESC");
 
-    List stories = new List();
+    List recipes = new List();
     results.forEach((result) {
-      Recipe story = Recipe.fromMap(result);
-      stories.add(story);
+      Recipe aRecipe = Recipe.fromMap(result);
+      recipes.add(aRecipe);
     });
 
-    return stories;
+    return recipes;
   }
 }
 
@@ -77,6 +75,7 @@ class Recipe {
   String ingredients;
   String preparation;
   String image_name;
+  String image_blob;
   String source_text;
   int original_id;
   String original_image;
