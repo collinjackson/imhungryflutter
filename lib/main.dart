@@ -17,6 +17,30 @@ class ImHungryApp extends StatefulWidget {
   ImHungryAppState createState() => new ImHungryAppState();
 }
 
+class ImHungryAppState extends State<ImHungryApp> {
+  DatabaseClient dbc;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeDatabase();
+    loadJSON();
+  }
+
+  Future initializeDatabase() async {
+    dbc = new DatabaseClient();
+    await dbc.create();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      title: "I\'m Hungry",
+      home: new MainScreen(),
+    );
+  }
+}
+
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -28,7 +52,6 @@ class MainScreen extends StatelessWidget {
   }
 }
 
-
 class IHGridView extends StatefulWidget {
   @override
   IHGridViewState createState() => new IHGridViewState();
@@ -37,24 +60,60 @@ class IHGridView extends StatefulWidget {
 class IHGridViewState extends State<IHGridView> {
   DatabaseClient dbc;
   var mylist = ["0", "1", "2"];
+  String title = "EMPTY";
 
   @override
   void initState() {
     super.initState();
-    initializeDatabase();
+//    initializeDatabase();
 //    loadJSON();
 
   }
 
   initializeDatabase() async {
+//    dbc = new DatabaseClient();
+//    await dbc.create();
+  }
+
+  Future<List> _getData() async {
     dbc = new DatabaseClient();
     await dbc.create();
+    List<Recipe> list = await dbc.fetchLatestRecipes(10);
+    return list;
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      child: buildGrid(),
+    return new Scaffold(
+      body: new FutureBuilder(
+        future: _getData(),
+        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
+          if (!snapshot.hasData) {
+            return new Container(child: new Center(
+              child: new Text('EMPTY',
+                style: new TextStyle(color: Colors.black),
+              ),
+            ),);
+          }
+          List items = snapshot.data;
+          return new GridView.builder(
+            gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+            ),
+            itemCount: items.length,
+            itemBuilder: (BuildContext context, int index) {
+              Recipe item = items[index];
+              return new Container(
+                child: new Center(
+                  child: new Text('${item.original_id}: ${item.title}',
+                    style: new TextStyle(color: Colors.black),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -62,6 +121,7 @@ class IHGridViewState extends State<IHGridView> {
     if (dbc!=null) {
       Recipe a = await dbc.fetchRecipe(1);
       mylist[index] = a.title;
+      print("*** Loaded " + a.title);
     }
   }
 
@@ -81,36 +141,3 @@ class IHGridViewState extends State<IHGridView> {
 
 } // end IHGridView
 
-
-
-class ImHungryAppState extends State<ImHungryApp> {
-  DatabaseClient dbc;
-
-  @override
-  void initState() {
-    super.initState();
-    initializeDatabase();
-    loadJSON();
-
-  }
-
-  Future initializeDatabase() async {
-    dbc = new DatabaseClient();
-    await dbc.create();
-
-//    Recipe aRecipe = new Recipe();
-//    aRecipe.original_id = 1;
-//    aRecipe.title = "First Recipe";
-//
-//    aRecipe = await dbc.upsertRecipe(aRecipe);
-//    print(aRecipe.title);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: "I\'m Hungry",
-      home: new MainScreen(),
-    );
-  }
-}

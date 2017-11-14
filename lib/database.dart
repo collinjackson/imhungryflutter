@@ -11,8 +11,12 @@ class DatabaseClient {
     Directory path = await getApplicationDocumentsDirectory();
     String dbPath = join(path.path, "database.db");
 
-    _db = await openDatabase(dbPath, version: 2,
+    _db = await openDatabase(dbPath, version: 5,
         onCreate: this._create);
+  }
+
+  Future close() async {
+    await _db.close();
   }
 
   Future _create(Database db, int version) async {
@@ -25,8 +29,9 @@ class DatabaseClient {
             title text not null,
             ingredients text,
             preparation text,
+            image_blob text,
             image_name text,
-            source text,
+            source_url text,
             original_id integer not null,
             original_image text,
             tags text,
@@ -76,7 +81,7 @@ class Recipe {
   String preparation;
   String image_name;
   String image_blob;
-  String source_text;
+  String source_url;
   int original_id;
   String original_image;
   String tags;
@@ -89,7 +94,7 @@ class Recipe {
                           "ingredients",
                           "preparation",
                           "image_name",
-                          "source_text",
+                          "source_url",
                           "original_id",
                           "original_image",
                           "tags",
@@ -103,7 +108,7 @@ class Recipe {
     if (original_id != null) {
       map["original_id"] = original_id;
     }
-
+    map["image_blob"] = image_blob;
     return map;
   }
 
@@ -111,9 +116,8 @@ class Recipe {
     Recipe recipe = new Recipe();
     recipe.original_id = map["original_id"];
     recipe.title = map["title"];
+    recipe.image_blob = map["image_blob"];
 
     return recipe;
   }
-
-
 }

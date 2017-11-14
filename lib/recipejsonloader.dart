@@ -17,9 +17,11 @@ Future loadJSON() async {
 
   for(var aRecipe in decoded['recipes']) {
     Recipe dbRecipe = new Recipe();
-    dbRecipe.original_id = decoded['original_id'];
-    dbRecipe.title = decoded['title'];
-    dbRecipe.image_blob = decoded['image_blog'];
+    dbRecipe.original_id = int.parse(aRecipe['original_id']);
+    dbRecipe.title = aRecipe['title'];
+    dbRecipe.image_blob = aRecipe['image_blog'];
+    dbc.upsertRecipe(dbRecipe);
     print (aRecipe['title']);
   }
+//  await dbc.close();
 }
