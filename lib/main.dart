@@ -17,6 +17,8 @@ class ImHungryApp extends StatefulWidget {
   ImHungryAppState createState() => new ImHungryAppState();
 }
 
+// App
+// Initialize database. Load MainScreen().
 class ImHungryAppState extends State<ImHungryApp> {
   DatabaseClient dbc;
 
@@ -41,6 +43,8 @@ class ImHungryAppState extends State<ImHungryApp> {
   }
 }
 
+// MainScreen
+// Set up app. Load IHGridView()
 class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -57,22 +61,14 @@ class IHGridView extends StatefulWidget {
   IHGridViewState createState() => new IHGridViewState();
 }
 
+// IHGridViewState
+// Load data from database. Render GridView.
 class IHGridViewState extends State<IHGridView> {
   DatabaseClient dbc;
-  var mylist = ["0", "1", "2"];
-  String title = "EMPTY";
 
   @override
   void initState() {
     super.initState();
-//    initializeDatabase();
-//    loadJSON();
-
-  }
-
-  initializeDatabase() async {
-//    dbc = new DatabaseClient();
-//    await dbc.create();
   }
 
   Future<List> _getData() async {
@@ -115,28 +111,5 @@ class IHGridViewState extends State<IHGridView> {
       ),
     );
   }
-
-  loadImageFromDB(int index) async {
-    if (dbc!=null) {
-      Recipe a = await dbc.fetchRecipe(1);
-      mylist[index] = a.title;
-      print("*** Loaded " + a.title);
-    }
-  }
-
-  Widget gridItemBuilder(int index)  {
-//    Recipe a = dbc.fetchRecipe(index);
-//    Uint8List bytes = BASE64.decode(a.image_blob);
-    loadImageFromDB(1);
-    return new Text(mylist[index%3]);
-
-  }
-
-  Widget buildGrid() {
-    return new GridView.builder(
-        gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-        itemBuilder: (context, index) => gridItemBuilder(index));
-  }
-
 } // end IHGridView
 
