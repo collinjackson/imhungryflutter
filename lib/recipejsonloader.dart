@@ -19,7 +19,7 @@ Future loadJSON() async {
     Recipe dbRecipe = new Recipe();
     dbRecipe.original_id = int.parse(aRecipe['original_id']);
     dbRecipe.title = aRecipe['title'];
-    dbRecipe.image_blob = aRecipe['image_blog'];
+    dbRecipe.image_blob = aRecipe['image_blob'];
     dbc.upsertRecipe(dbRecipe);
     print (aRecipe['title']);
   }

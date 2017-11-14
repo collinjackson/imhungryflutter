@@ -94,6 +94,7 @@ class Recipe {
                           "ingredients",
                           "preparation",
                           "image_name",
+                          "image_blob",
                           "source_url",
                           "original_id",
                           "original_image",

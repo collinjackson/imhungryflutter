@@ -103,11 +103,10 @@ class IHGridViewState extends State<IHGridView> {
             itemCount: items.length,
             itemBuilder: (BuildContext context, int index) {
               Recipe item = items[index];
+              Uint8List bytes = BASE64.decode(item.image_blob);
               return new Container(
                 child: new Center(
-                  child: new Text('${item.original_id}: ${item.title}',
-                    style: new TextStyle(color: Colors.black),
-                  ),
+                  child: new Image.memory(bytes),
                 ),
               );
             },
