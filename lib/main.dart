@@ -105,11 +105,12 @@ class IHGridViewState extends State<IHGridView> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body:  new GridView(
+      body:  new GridView.builder(
             gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
             ),
-            children: new List.unmodifiable(list),
+            itemCount: list.length,
+            itemBuilder: (BuildContext context, int index) => list[index],
           ),
       );
   }
