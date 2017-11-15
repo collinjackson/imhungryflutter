@@ -55,21 +55,20 @@ class IHGridViewState extends State<IHGridView> {
   int recipeCount = 0;
 
   @override
-  // Converted to async and added await as per
+  // Found related info here
   // https://stackoverflow.com/questions/45107702/flutter-timing-problems-on-stateful-widget-after-api-call
-  Future initState() async {
+  void initState()  {
     super.initState();
-    await initializeDatabase();
-    await loadJSON();
+     initializeDatabase();
+     loadJSON();
   }
 
   Future initializeDatabase() async {
-    dbc = new DatabaseClient();
-    await dbc.create();
+
   }
 
   Future loadJSON() async {
-    DatabaseClient dbc = new DatabaseClient();
+    dbc = new DatabaseClient();
     await dbc.create();
 
     String recipesJSON = await rootBundle.loadString('res/recipes.json');
