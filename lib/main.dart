@@ -51,7 +51,7 @@ class IHGridView extends StatefulWidget {
 // Load data from database. Render GridView.
 class IHGridViewState extends State<IHGridView> {
   DatabaseClient dbc;
-  List<Recipe> list = [];
+  List<Widget> list = [];
   int recipeCount = 0;
 
   @override
@@ -80,10 +80,13 @@ class IHGridViewState extends State<IHGridView> {
       dbRecipe.title = aRecipe['title'];
       dbRecipe.image_blob = aRecipe['image_blob'];
       dbc.upsertRecipe(dbRecipe);
-      sleep(const Duration(milliseconds:10));  // to show that rendering does not happen between iterations
+      await new Future.delayed(const Duration(milliseconds:10));  // to show that rendering does not happen between iterations
 
+      Uint8List bytes = BASE64.decode(dbRecipe.image_blob);
       setState(() {
-        list.add(dbRecipe);
+        list.add(new Container(
+          child: new Image.memory(bytes),
+        ));
         recipeCount++;
       });
 
@@ -102,20 +105,11 @@ class IHGridViewState extends State<IHGridView> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body:  new GridView.builder(
+      body:  new GridView(
             gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
             ),
-            itemCount: list.length,
-            itemBuilder: (BuildContext context, int index) {
-              Recipe item = list[index];
-              Uint8List bytes = BASE64.decode(item.image_blob);
-              return new Container(
-                child: new Center(
-                  child: new Image.memory(bytes),
-                ),
-              );
-            },
+            children: new List.unmodifiable(list),
           ),
       );
   }
