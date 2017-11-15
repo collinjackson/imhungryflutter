@@ -5,7 +5,6 @@ import 'dart:async';
 import 'dart:async' show Future;
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
-import 'database.dart';
 import 'dart:typed_data';
 
 void main() {
@@ -56,10 +55,12 @@ class IHGridViewState extends State<IHGridView> {
   int recipeCount = 0;
 
   @override
-  void initState() {
+  // Converted to async and added await as per
+  // https://stackoverflow.com/questions/45107702/flutter-timing-problems-on-stateful-widget-after-api-call
+  Future initState() async {
     super.initState();
-    initializeDatabase();
-    loadJSON();
+    await initializeDatabase();
+    await loadJSON();
   }
 
   Future initializeDatabase() async {
@@ -80,14 +81,14 @@ class IHGridViewState extends State<IHGridView> {
       dbRecipe.title = aRecipe['title'];
       dbRecipe.image_blob = aRecipe['image_blob'];
       dbc.upsertRecipe(dbRecipe);
-       sleep(const Duration(milliseconds:10));
+      sleep(const Duration(milliseconds:10));  // to show that rendering does not happen between iterations
 
       setState(() {
         list.add(dbRecipe);
         recipeCount++;
       });
 
-      print (aRecipe['title']);
+      print (dbRecipe.title);
     }
 //  await dbc.close();
   }
