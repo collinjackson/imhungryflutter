@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'database.dart';
 import 'dart:io';
 import 'dart:async';
-import 'recipejsonloader.dart';
-
-
+import 'dart:async' show Future;
+import 'package:flutter/services.dart' show rootBundle;
 import 'dart:convert';
+import 'database.dart';
 import 'dart:typed_data';
 
 void main() {
@@ -20,19 +20,6 @@ class ImHungryApp extends StatefulWidget {
 // App
 // Initialize database. Load MainScreen().
 class ImHungryAppState extends State<ImHungryApp> {
-  DatabaseClient dbc;
-
-  @override
-  void initState() {
-    super.initState();
-    initializeDatabase();
-    loadJSON();
-  }
-
-  Future initializeDatabase() async {
-    dbc = new DatabaseClient();
-    await dbc.create();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,16 +52,47 @@ class IHGridView extends StatefulWidget {
 // Load data from database. Render GridView.
 class IHGridViewState extends State<IHGridView> {
   DatabaseClient dbc;
+  List<Recipe> list = [];
 
   @override
   void initState() {
     super.initState();
+    initializeDatabase();
+    loadJSON();
+  }
+
+  Future initializeDatabase() async {
+    dbc = new DatabaseClient();
+    await dbc.create();
+  }
+
+  Future<String> _loadJSON() async {
+    return await rootBundle.loadString('res/recipes.json');
+  }
+
+  Future loadJSON() async {
+    DatabaseClient dbc = new DatabaseClient();
+    await dbc.create();
+
+    String recipesJSON = await _loadJSON();
+    print(recipesJSON);
+    Map decoded = JSON.decode(recipesJSON);
+
+    for(var aRecipe in decoded['recipes']) {
+      Recipe dbRecipe = new Recipe();
+      dbRecipe.original_id = int.parse(aRecipe['original_id']);
+      dbRecipe.title = aRecipe['title'];
+      dbRecipe.image_blob = aRecipe['image_blob'];
+      dbc.upsertRecipe(dbRecipe);
+      print (aRecipe['title']);
+    }
+//  await dbc.close();
   }
 
   Future<List> _getData() async {
     dbc = new DatabaseClient();
     await dbc.create();
-    List<Recipe> list = await dbc.fetchLatestRecipes(10);
+    list = await dbc.fetchLatestRecipes(20);
     return list;
   }
 
@@ -86,7 +104,7 @@ class IHGridViewState extends State<IHGridView> {
         builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
           if (!snapshot.hasData) {
             return new Container(child: new Center(
-              child: new Text('EMPTY',
+              child: new Text('Please wait...',
                 style: new TextStyle(color: Colors.black),
               ),
             ),);
