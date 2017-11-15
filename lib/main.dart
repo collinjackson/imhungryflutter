@@ -53,6 +53,7 @@ class IHGridView extends StatefulWidget {
 class IHGridViewState extends State<IHGridView> {
   DatabaseClient dbc;
   List<Recipe> list = [];
+  int recipeCount = 0;
 
   @override
   void initState() {
@@ -66,16 +67,11 @@ class IHGridViewState extends State<IHGridView> {
     await dbc.create();
   }
 
-  Future<String> _loadJSON() async {
-    return await rootBundle.loadString('res/recipes.json');
-  }
-
   Future loadJSON() async {
     DatabaseClient dbc = new DatabaseClient();
     await dbc.create();
 
-    String recipesJSON = await _loadJSON();
-    print(recipesJSON);
+    String recipesJSON = await rootBundle.loadString('res/recipes.json');
     Map decoded = JSON.decode(recipesJSON);
 
     for(var aRecipe in decoded['recipes']) {
@@ -84,6 +80,13 @@ class IHGridViewState extends State<IHGridView> {
       dbRecipe.title = aRecipe['title'];
       dbRecipe.image_blob = aRecipe['image_blob'];
       dbc.upsertRecipe(dbRecipe);
+       sleep(const Duration(milliseconds:10));
+
+      setState(() {
+        list.add(dbRecipe);
+        recipeCount++;
+      });
+
       print (aRecipe['title']);
     }
 //  await dbc.close();
@@ -92,31 +95,20 @@ class IHGridViewState extends State<IHGridView> {
   Future<List> _getData() async {
     dbc = new DatabaseClient();
     await dbc.create();
-    list = await dbc.fetchLatestRecipes(20);
+    list = await dbc.fetchLatestRecipes(500);
     return list;
   }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new FutureBuilder(
-        future: _getData(),
-        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
-          if (!snapshot.hasData) {
-            return new Container(child: new Center(
-              child: new Text('Please wait...',
-                style: new TextStyle(color: Colors.black),
-              ),
-            ),);
-          }
-          List items = snapshot.data;
-          return new GridView.builder(
+      body:  new GridView.builder(
             gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
             ),
-            itemCount: items.length,
+            itemCount: list.length,
             itemBuilder: (BuildContext context, int index) {
-              Recipe item = items[index];
+              Recipe item = list[index];
               Uint8List bytes = BASE64.decode(item.image_blob);
               return new Container(
                 child: new Center(
@@ -124,10 +116,8 @@ class IHGridViewState extends State<IHGridView> {
                 ),
               );
             },
-          );
-        },
-      ),
-    );
+          ),
+      );
   }
 } // end IHGridView
 

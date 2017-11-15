@@ -57,6 +57,11 @@ class DatabaseClient {
     return recipe;
   }
 
+  Future fetchCount() async {
+    return Sqflite
+            .firstIntValue(await _db.rawQuery("SELECT COUNT(*) FROM recipes"));
+  }
+
   Future<List> fetchLatestRecipes(int limit) async {
     List results = await _db.query("recipes", columns: Recipe.columns, limit: limit, orderBy: "original_id DESC");
 
